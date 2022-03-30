@@ -1,78 +1,66 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
+using System;
 using DogGo.Models;
-using DogGo.Models.ViewModels;
 using DogGo.Repositories;
 
 namespace DogGo.Controllers
 {
-    public class WalkersController : Controller
+    public class WalksController : Controller
     {
-        private readonly IWalkerRepository _walkerRepo;
         private readonly IWalkRepository _walkRepo;
 
-        public WalkersController(IWalkerRepository walkerRepository, IWalkRepository walkRepository)
+        public WalksController(IWalkRepository walkRepository)
         {
-            _walkerRepo = walkerRepository;
             _walkRepo = walkRepository;
         }
-        // GET: Walkers
+
+        // GET: WalksController
         public ActionResult Index()
         {
-            List<Walker> walkers = _walkerRepo.GetAllWalkers();
+            List<Walk> walks = _walkRepo.GetAllWalks();
 
-            return View(walkers);
+            return View(walks);
         }
 
-        // GET: Walkers/Details/5
+        // GET: WalksController/Details/5
         public ActionResult Details(int id)
         {
-            Walker walker = _walkerRepo.GetWalkerById(id);
-            List<Walk> walks = _walkRepo.GetWalksByWalker(id);
 
-            if (walker == null)
-            {
-                return NotFound();
-            }
-
-            WalkerViewModel vm = new WalkerViewModel()
-            {
-                Walker = walker,
-                Walks = walks
-            };
-
-            return View(vm);
+            return View();
         }
 
-        // GET: WalkersController/Create
+        // GET: WalksController/Create
         public ActionResult Create()
         {
             return View();
         }
 
-        // POST: WalkersController/Create
+        // POST: WalksController/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(IFormCollection collection)
+        public ActionResult Create(Walk walk)
         {
             try
             {
-                return RedirectToAction(nameof(Index));
+                _walkRepo.AddWalk(walk);
+
+                return RedirectToAction("index");
             }
-            catch
+            catch(Exception ex)
             {
-                return View();
+                return View(walk);
             }
         }
 
-        // GET: WalkersController/Edit/5
+        // GET: WalksController/Edit/5
         public ActionResult Edit(int id)
         {
             return View();
         }
 
-        // POST: WalkersController/Edit/5
+        // POST: WalksController/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Edit(int id, IFormCollection collection)
@@ -87,13 +75,13 @@ namespace DogGo.Controllers
             }
         }
 
-        // GET: WalkersController/Delete/5
+        // GET: WalksController/Delete/5
         public ActionResult Delete(int id)
         {
             return View();
         }
 
-        // POST: WalkersController/Delete/5
+        // POST: WalksController/Delete/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Delete(int id, IFormCollection collection)
