@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System;
 using DogGo.Models;
+using DogGo.Models.ViewModels;
 using DogGo.Repositories;
 
 namespace DogGo.Controllers
@@ -10,10 +11,14 @@ namespace DogGo.Controllers
     public class WalksController : Controller
     {
         private readonly IWalkRepository _walkRepo;
+        private readonly IDogRepository _dogRepo;
+        private readonly IWalkerRepository _walkerRepo;
 
-        public WalksController(IWalkRepository walkRepository)
+        public WalksController(IWalkRepository walkRepository, IDogRepository dogRepository, IWalkerRepository walkerRepository)
         {
             _walkRepo = walkRepository;
+            _dogRepo = dogRepository;
+            _walkerRepo = walkerRepository;
         }
 
         // GET: WalksController
@@ -34,23 +39,35 @@ namespace DogGo.Controllers
         // GET: WalksController/Create
         public ActionResult Create()
         {
-            return View();
+            WalkFormViewModel vm = new WalkFormViewModel()
+            {
+                Walk = new Walk(),
+                Dogs = _dogRepo.GetAllDogs(),
+                Walkers = _walkerRepo.GetAllWalkers(),
+                SelectedDogIds = new List<int>()
+            };
+
+            return View(vm);
         }
 
         // POST: WalksController/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(Walk walk)
+        public ActionResult Create(WalkFormViewModel vm)
         {
             try
             {
-                _walkRepo.AddWalk(walk);
+                foreach(int dogId in vm.SelectedDogIds)
+                {
+                    vm.Walk.DogId = dogId;
+                    _walkRepo.AddWalk(vm.Walk);
+                }
 
                 return RedirectToAction("index");
             }
             catch(Exception ex)
             {
-                return View(walk);
+                return View(vm);
             }
         }
 
